@@ -49,15 +49,15 @@ For more information, check out the new_vis_guidance.md
 # TODO: Remove unused imports and edit strings and variables in all CAPS
 # TODO: Remove comments specific for the template
 
-PAGE = "new_tab"  # EDIT FOR CURRENT PAGE
-VIZ_ID = "labor_investment"  # UNIQUE IDENTIFIER FOR VIZUALIZATION
+PAGE = "health"  # EDIT FOR CURRENT PAGE
+VIZ_ID = "release_frequency"  # UNIQUE IDENTIFIER FOR VIZUALIZATION
 
-gc_labor_investment = dbc.Card(
+gc_release_frequency = dbc.Card(
     [
         dbc.CardBody(
             [
                 html.H3(
-                    "Labor Investment",
+                    "Release Frequency",
                     className="card-title",
                     style={"textAlign": "center"},
                 ),
@@ -114,46 +114,7 @@ gc_labor_investment = dbc.Card(
                             ],
                             align="center",
                         ),
-                        # TODO: ADD IN IF ADDITIONAL PARAMETERS FOR GRAPH, REMOVE IF NOT
-                        """ format dbc.Inputs, including dbc.Alert if needed
-                                dbc.Label(
-                                    "TITLE_OF_ADDITIONAL_PARAMETER:",
-                                    html_for=f"component-identifier-{PAGE}-{VIZ_ID}",
-                                    width={"size": "auto"},
-                                ),
-                                dbc.Col(
-                                    dbc.Input(
-                                        id=f"component-identifier-{PAGE}-{VIZ_ID}",,
-                                        type="number",
-                                        min=1,
-                                        max=120,
-                                        step=1,
-                                        value=7,
-                                    ),
-                                    className="me-2",
-                                    width=2,
-                                ),
-                                dbc.Alert(
-                                    children="Please ensure that 'PARAMETER' is less than 'PARAMETER'",
-                                    id=f"component-identifier-{PAGE}-{VIZ_ID}",
-                                    dismissable=True,
-                                    fade=False,
-                                    is_open=False,
-                                    color="warning",
-                                ),
-                        """
-                        """ format for dcc.DatePickerRange:
-                                dbc.Col(
-                                    dcc.DatePickerRange(
-                                        id=f"component-identifier-{PAGE}-{VIZ_ID}",
-                                        min_date_allowed=dt.date(2005, 1, 1),
-                                        max_date_allowed=dt.date.today(),
-                                        clearable=True,
-                                    ),
-                                    width="auto",
-                                ),
-
-                        """,
+                        "line graph",
                     ]
                 ),
             ]

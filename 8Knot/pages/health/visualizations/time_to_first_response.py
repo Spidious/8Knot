@@ -50,14 +50,14 @@ For more information, check out the new_vis_guidance.md
 # TODO: Remove comments specific for the template
 
 PAGE = "new_tab"  # EDIT FOR CURRENT PAGE
-VIZ_ID = "bus_factor"  # UNIQUE IDENTIFIER FOR VIZUALIZATION
+VIZ_ID = "time_to_first_response"  # UNIQUE IDENTIFIER FOR VIZUALIZATION
 
-gc_bus_factor = dbc.Card(
+gc_time_to_first_response = dbc.Card(
     [
         dbc.CardBody(
             [
                 html.H3(
-                    "Bus Factor",
+                    "Time to First Response",
                     className="card-title",
                     style={"textAlign": "center"},
                 ),
@@ -114,46 +114,7 @@ gc_bus_factor = dbc.Card(
                             ],
                             align="center",
                         ),
-                        # TODO: ADD IN IF ADDITIONAL PARAMETERS FOR GRAPH, REMOVE IF NOT
-                        """ format dbc.Inputs, including dbc.Alert if needed
-                                dbc.Label(
-                                    "TITLE_OF_ADDITIONAL_PARAMETER:",
-                                    html_for=f"component-identifier-{PAGE}-{VIZ_ID}",
-                                    width={"size": "auto"},
-                                ),
-                                dbc.Col(
-                                    dbc.Input(
-                                        id=f"component-identifier-{PAGE}-{VIZ_ID}",,
-                                        type="number",
-                                        min=1,
-                                        max=120,
-                                        step=1,
-                                        value=7,
-                                    ),
-                                    className="me-2",
-                                    width=2,
-                                ),
-                                dbc.Alert(
-                                    children="Please ensure that 'PARAMETER' is less than 'PARAMETER'",
-                                    id=f"component-identifier-{PAGE}-{VIZ_ID}",
-                                    dismissable=True,
-                                    fade=False,
-                                    is_open=False,
-                                    color="warning",
-                                ),
-                        """
-                        """ format for dcc.DatePickerRange:
-                                dbc.Col(
-                                    dcc.DatePickerRange(
-                                        id=f"component-identifier-{PAGE}-{VIZ_ID}",
-                                        min_date_allowed=dt.date(2005, 1, 1),
-                                        max_date_allowed=dt.date.today(),
-                                        clearable=True,
-                                    ),
-                                    width="auto",
-                                ),
-
-                        """,
+                        "line graph",
                     ]
                 ),
             ]
@@ -219,6 +180,8 @@ def process_data(df: pd.DataFrame, interval):
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
     df["created_at"] = pd.to_datetime(df["created_at"], utc=True)
+    df["x"] = 6
+    df['y'] = 12
 
     # order values chronologically by COLUMN_TO_SORT_BY date
     df = df.sort_values(by="created_at", axis=0, ascending=True)
@@ -233,7 +196,20 @@ def create_figure(df: pd.DataFrame, interval):
     x_r, x_name, hover, period = get_graph_time_values(interval)
 
     # graph generation
-    fig = fig
+
+    # fig = fig
+    fig = go.Figure(
+        [
+            go.Scatter(
+                name="New",
+                x = df['x'],
+                y = df['y'],
+                mode="lines",
+                showlegend=True,
+                marker=dict(color=color_seq[1]),
+            )
+        ]
+    )
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
 
