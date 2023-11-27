@@ -3,6 +3,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
 import logging
 from dateutil.relativedelta import *  # type: ignore
@@ -198,42 +199,48 @@ def create_figure(df: pd.DataFrame, interval):
     # graph generation
 
     # fig = fig
-    fig = go.Figure(
-        [
-            go.Scatter(
-                name="New1",
-                x = [1, 1.5, 2, 2.5],
-                y = [1, 1, 1, 1],
-                mode="lines",
-                showlegend=True,
-                hovertemplate="TESTING TESTING TESTING",
-                marker=dict(color=color_seq[1]),
-            ),
-            go.Scatter(
-                name="New2",
-                x = [1, 1.5, 2, 2.5],
-                y = [1.5, 1.5, 1.5, 1.5],
-                mode="lines",
-                showlegend=True,
-                hovertemplate="TESTING TESTING TESTING",
-                marker=dict(color=color_seq[5]),
-            ), 
-            go.Scatter(
-                name="New3",
-                x = [1, 1.5, 2, 2.5],
-                y = [2, 2, 2, 2],
-                mode="lines",
-                showlegend=True,
-                hovertemplate="TESTING TESTING TESTING",
-                marker=dict(color=color_seq[2]),
-            )
-        ]
-    )
-    fig.update_layout(
-        xaxis_title="Time",
-        yaxis_title="Number of PRs",
-        font=dict(size=14),
-    )
+    # fig = go.Figure(
+    #     [
+    #         go.Scatter(
+    #             name="New1",
+    #             x = [1, 1.5, 2, 2.5],
+    #             y = [1, 1, 1, 1],
+    #             mode="lines",
+    #             showlegend=True,
+    #             hovertemplate="TESTING TESTING TESTING",
+    #             marker=dict(color=color_seq[1]),
+    #         ),
+    #         go.Scatter(
+    #             name="New2",
+    #             x = [1, 1.5, 2, 2.5],
+    #             y = [1.5, 1.5, 1.5, 1.5],
+    #             mode="lines",
+    #             showlegend=True,
+    #             hovertemplate="TESTING TESTING TESTING",
+    #             marker=dict(color=color_seq[5]),
+    #         ), 
+    #         go.Scatter(
+    #             name="New3",
+    #             x = [1, 1.5, 2, 2.5],
+    #             y = [2, 2, 2, 2],
+    #             mode="lines",
+    #             showlegend=True,
+    #             hovertemplate="TESTING TESTING TESTING",
+    #             marker=dict(color=color_seq[2]),
+    #         )
+    #     ]
+    # )
+
+    # fig.update_layout(
+    #     xaxis_title="Time",
+    #     yaxis_title="Number of PRs",
+    #     font=dict(size=14),
+    # )
+
+    fig = px.scatter(name="test",
+                    showlegend=True,
+                    x=[0, 1, 2, 3, 4], 
+                    y=[0, 1, 4, 9, 16])
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
 
