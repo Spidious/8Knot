@@ -202,10 +202,29 @@ def create_figure(df: pd.DataFrame, interval):
         [
             go.Scatter(
                 name="New",
-                x = df['x'],
-                y = df['y'],
+                x = 2,
+                y = 2,
                 mode="lines",
                 showlegend=True,
+                hovertemplate="TESTING TESTING TESTING",
+                marker=dict(color=color_seq[1]),
+            ),
+            go.Scatter(
+                name="New",
+                x = 3,
+                y = 2,
+                mode="lines",
+                showlegend=True,
+                hovertemplate="TESTING TESTING TESTING",
+                marker=dict(color=color_seq[1]),
+            ), 
+            go.Scatter(
+                name="New",
+                x = 4,
+                y = 2,
+                mode="lines",
+                showlegend=True,
+                hovertemplate="TESTING TESTING TESTING",
                 marker=dict(color=color_seq[1]),
             )
         ]
