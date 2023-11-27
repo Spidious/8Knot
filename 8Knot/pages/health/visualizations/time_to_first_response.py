@@ -180,8 +180,8 @@ def process_data(df: pd.DataFrame, interval):
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
     df["created_at"] = pd.to_datetime(df["created_at"], utc=True)
-    df["x"] = 6
-    df['y'] = 12
+    df["x"] = 5
+    df['y'] = 2
 
     # order values chronologically by COLUMN_TO_SORT_BY date
     df = df.sort_values(by="created_at", axis=0, ascending=True)
