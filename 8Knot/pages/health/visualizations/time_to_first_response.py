@@ -201,33 +201,38 @@ def create_figure(df: pd.DataFrame, interval):
     fig = go.Figure(
         [
             go.Scatter(
-                name="New",
-                x = 2,
-                y = 2,
+                name="New1",
+                x = [1, 1.5, 2, 2.5],
+                y = [1, 1, 1, 1],
                 mode="lines",
                 showlegend=True,
                 hovertemplate="TESTING TESTING TESTING",
                 marker=dict(color=color_seq[1]),
             ),
             go.Scatter(
-                name="New",
-                x = 3,
-                y = 2,
+                name="New2",
+                x = [1, 1.5, 2, 2.5],
+                y = [1.5, 1.5, 1.5, 1.5],
                 mode="lines",
                 showlegend=True,
                 hovertemplate="TESTING TESTING TESTING",
-                marker=dict(color=color_seq[1]),
+                marker=dict(color=color_seq[5]),
             ), 
             go.Scatter(
-                name="New",
-                x = 4,
-                y = 2,
+                name="New3",
+                x = [1, 1.5, 2, 2.5],
+                y = [2, 2, 2, 2],
                 mode="lines",
                 showlegend=True,
                 hovertemplate="TESTING TESTING TESTING",
-                marker=dict(color=color_seq[1]),
+                marker=dict(color=color_seq[2]),
             )
         ]
+    )
+    fig.update_layout(
+        xaxis_title="Time",
+        yaxis_title="Number of PRs",
+        font=dict(size=14),
     )
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
