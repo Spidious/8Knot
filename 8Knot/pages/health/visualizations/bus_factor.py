@@ -186,6 +186,8 @@ def process_data(df: pd.DataFrame, interval):
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
 
+    
+
     return df
 
 
@@ -194,7 +196,7 @@ def create_figure(df: pd.DataFrame, interval):
     x_r, x_name, hover, period = get_graph_time_values(interval)
 
     # graph generation
-    fig = fig
+    fig = px.pie(values=[5, 6, 2, 1], names=['1', '2', '3', '4'])
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
 
