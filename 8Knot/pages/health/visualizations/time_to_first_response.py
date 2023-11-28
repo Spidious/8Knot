@@ -167,7 +167,7 @@ def time_to_first_response_graph(repolist, interval):
     # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
     df = process_data(df, interval)
 
-    fig = create_figure(df, interval)
+    fig = create_figure(df)
 
     logging.warning(f"{VIZ_ID} - END - {time.perf_counter() - start}")
     return fig

@@ -194,7 +194,7 @@ def create_figure(df: pd.DataFrame, interval):
     x_r, x_name, hover, period = get_graph_time_values(interval)
 
     # graph generation
-    fig = fig
+    fig = px.pie(df, name="")
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
 
