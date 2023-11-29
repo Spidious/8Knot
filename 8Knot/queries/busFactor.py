@@ -48,7 +48,9 @@ def bus_factor_query(self, repos):
         return None
 
     query_string = f"""
-                    SELECT c.cmt_author_name, count(c.cmt_id) AS cmt_count
+                    SELECT c.cmt_author_name, 
+                        count(c.cmt_id) AS cmt_count,
+
                     FROM commits c
                     GROUP BY c.cmt_author_name
                     """

@@ -66,6 +66,15 @@ class AugurManager:
             self.port = os.environ["AUGUR_PORT"]
             self.database = os.environ["AUGUR_DATABASE"]
             self.schema = os.environ["AUGUR_SCHEMA"]
+
+            with open("C:\\Users\\luked\\Documents\\8Knot\\8Knot\\db_manager\\out.txt", "w") as fp:
+                fp.write(self.user+"\n")
+                fp.write(self.password+"\n")
+                fp.write(self.host+"\n")
+                fp.write(self.port+"\n")
+                fp.write(self.database+"\n")
+                fp.write(self.schema+"\n")
+
         except KeyError as ke:
             logging.critical(f"AUGUR: Database credentials incomplete: {ke}")
             raise KeyError(ke)

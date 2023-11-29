@@ -166,7 +166,7 @@ def time_to_first_response_graph(repolist, interval):
     # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
     df = process_data(df, interval)
 
-    fig = create_figure(df, interval)
+    fig = create_figure(df)
 
     logging.warning(f"{VIZ_ID} - END - {time.perf_counter() - start}")
     return fig
@@ -191,13 +191,14 @@ def process_data(df: pd.DataFrame, interval):
     return df
 
 
-def create_figure(df: pd.DataFrame, interval):
-    # time values for graph
-    x_r, x_name, hover, period = get_graph_time_values(interval)
-
+def create_figure(df: pd.DataFrame):
     # graph generation
-    fig = fig
-
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
+    fig = px.pie(values=df['cmt_count'],
+                names=df['cmt_author_name'])
+    fig.update_traces(
+                textposition="inside",  
+                textinfo="percent+label",
+                hovertemplate="%{label} <br>Commits: %{value}<br><extra></extra>",
+    )
 
     return fig
