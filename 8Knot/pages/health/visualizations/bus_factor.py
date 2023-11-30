@@ -193,8 +193,8 @@ def process_data(df: pd.DataFrame, interval):
 
 def create_figure(df: pd.DataFrame):
     # graph generation
-    fig = px.pie(values=df['cmt_count'],
-                names=df['cmt_author_name'])
+    fig = px.pie(values=df['commit_count'],
+                names=df['id'])
     fig.update_traces(
                 textposition="inside",  
                 textinfo="percent+label",

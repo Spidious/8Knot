@@ -48,11 +48,23 @@ def bus_factor_query(self, repos):
         return None
 
     query_string = f"""
-                    SELECT c.cmt_author_name, 
-                        count(c.cmt_id) AS cmt_count,
-
-                    FROM commits c
-                    GROUP BY c.cmt_author_name
+                    select
+                        inTable.cntrb_id as id,
+                        inTable.commit_count,
+                        r.repo_added as created
+                    from
+                        (
+                        select cntrb_id, repo_id, count(*) as commit_count
+                        from augur_data.explorer_contributor_actions
+                             where action = 'commit' and cntrb_id is not NULL 
+                                group by cntrb_id, repo_id
+                        order by commit_count desc
+                       ) as inTable,
+                       augur_data.repo r
+                    where 
+                       r.repo_id = inTable.repo_id
+                       and
+                       r.repo_added is not NULL; 
                     """
                     # repo_id in ({str(repos)[1:-1]})
 
