@@ -8,7 +8,7 @@ import logging
 from dateutil.relativedelta import *  # type: ignore
 import plotly.express as px
 from pages.utils.graph_utils import get_graph_time_values, color_seq
-from queries.contributors_query import contributors_query as ctq
+from queries.busFactor import bus_factor_query as bfq
 import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
@@ -150,10 +150,10 @@ def toggle_popover(n, is_open):
 def time_to_first_response_graph(repolist, interval):
     # wait for data to asynchronously download and become available.
     cache = cm()
-    df = cache.grabm(func=ctq, repos=repolist)
+    df = cache.grabm(func=bfq, repos=repolist)
     while df is None:
         time.sleep(1.0)
-        df = cache.grabm(func=ctq, repos=repolist)
+        df = cache.grabm(func=bfq, repos=repolist)
 
     start = time.perf_counter()
     logging.warning(f"{VIZ_ID}- START")
