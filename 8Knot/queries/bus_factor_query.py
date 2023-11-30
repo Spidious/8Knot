@@ -49,8 +49,9 @@ def bus_factor_query(self, repos):
 
     query_string = f"""
                     select
-                        inTable.cntrb_id as id,
+                        inTable.cntrb_id,
                         inTable.commit_count,
+                        inTable.repo_id as id, 
                         r.repo_added as created
                     from
                         (
@@ -64,7 +65,9 @@ def bus_factor_query(self, repos):
                     where 
                        r.repo_id = inTable.repo_id
                        and
-                       r.repo_added is not NULL; 
+                       r.repo_added is not NULL 
+                       and 
+                       r.repo_id in ({str(repos)[1:-1]}); 
                     """
                     # repo_id in ({str(repos)[1:-1]})
 

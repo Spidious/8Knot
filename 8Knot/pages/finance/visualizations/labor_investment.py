@@ -165,7 +165,7 @@ def time_to_first_response_graph(repolist, interval):
     # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
     df = process_data(df, interval)
 
-    fig = create_figure(df, interval)
+    fig = create_figurex(df, interval)
 
     logging.warning(f"{VIZ_ID} - END - {time.perf_counter() - start}")
     return fig
@@ -188,7 +188,7 @@ def process_data(df: pd.DataFrame, interval):
     return df
 
 
-def create_figure(df: pd.DataFrame, interval):
+def create_figurex(df: pd.DataFrame, interval):
     # time values for graph
     x_r, x_name, hover, period = get_graph_time_values(interval)
 
