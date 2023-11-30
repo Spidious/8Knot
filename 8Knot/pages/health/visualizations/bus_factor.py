@@ -181,11 +181,11 @@ def process_data(df: pd.DataFrame, interval):
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
     #df["created_at"] = pd.to_datetime(df["created_at"], utc=True)
-    df = df[pd.to_datetime(df.created_at).dt.date >= (dt.date.today() - dt.timedelta(days=365))]
+    df = df[pd.to_datetime(df.created).dt.date >= (dt.date.today() - dt.timedelta(days=365))]
 
 
     # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created_at", axis=0, ascending=True)
+    df = df.sort_values(by="created", axis=0, ascending=True)
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
 
