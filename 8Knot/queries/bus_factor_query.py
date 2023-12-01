@@ -49,22 +49,24 @@ def bus_factor_query(self, repos):
 
     query_string = f"""
                     select
-                        inTable.cntrb_id as id,
+                        inTable.cntrb_id,
                         inTable.commit_count,
-                        r.repo_added as created
+                        inTable.created_at as created, 
+                        inTable.repo_id as id
                     from
                         (
-                        select cntrb_id, repo_id, count(*) as commit_count
+                        select cntrb_id, repo_id, count(*) as commit_count, created_at 
                         from augur_data.explorer_contributor_actions
                              where action = 'commit' and cntrb_id is not NULL 
-                                group by cntrb_id, repo_id
-                        order by commit_count desc
+                                group by cntrb_id, repo_id, created_at 
                        ) as inTable,
                        augur_data.repo r
                     where 
                        r.repo_id = inTable.repo_id
                        and
-                       r.repo_added is not NULL; 
+                       r.repo_added is not NULL 
+                       and 
+                       r.repo_id in ({str(repos)[1:-1]}); 
                     """
                     # repo_id in ({str(repos)[1:-1]})
 
@@ -85,8 +87,8 @@ def bus_factor_query(self, repos):
     # pandas column and format updates
     #Commonly used df updates:
 
-    # df["cntrb_id"] = df["cntrb_id"].astype(str)  # contributor ids to strings
-    # df["cntrb_id"] = df["cntrb_id"].str[:15]
+    df["cntrb_id"] = df["cntrb_id"].astype(str)  # contributor ids to strings
+    df["cntrb_id"] = df["cntrb_id"].str[:15]
     df = df.sort_values(by="created")
     # df = df.reset_index()
     # df = df.reset_index(drop=True)

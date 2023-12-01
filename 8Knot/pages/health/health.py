@@ -18,9 +18,9 @@ layout = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(gc_bus_factor, width=6),
-                dbc.Col(gc_release_frequency, width=6),
+                #dbc.Col(gc_release_frequency, width=6),
                 dbc.Col(gc_time_to_first_response, width=6),
-                dbc.Col(gc_change_request_closure_ratio, width=6),
+                #dbc.Col(gc_change_request_closure_ratio, width=6),
             ],
             align="center",
             style={"marginBottom": ".5%"},
