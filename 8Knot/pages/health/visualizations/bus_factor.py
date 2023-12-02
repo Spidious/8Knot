@@ -8,7 +8,12 @@ import logging
 from dateutil.relativedelta import *  # type: ignore
 import plotly.express as px
 from pages.utils.graph_utils import get_graph_time_values, color_seq
+<<<<<<< HEAD
 from queries.busFactor import bus_factor_query as bfq
+=======
+#from queries.contributors_query import contributors_query as ctq
+from queries.bus_factor_query import bus_factor_query as bfq
+>>>>>>> 9169193336ddd47b366157e7b6d82bfefe45bac3
 import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
