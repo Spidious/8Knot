@@ -87,21 +87,21 @@ def bus_factor_query(self, repos):
     # pandas column and format updates
     #Commonly used df updates:
 
-    df["cntrb_id"] = df["cntrb_id"].astype(str)  # contributor ids to strings
-    df["cntrb_id"] = df["cntrb_id"].str[:15]
-    df = df.sort_values(by="created")
+    df["release_id"] = df["release_id"].astype(str)  # contributor ids to strings
+    df["release_id"] = df["release_id"].str[:15]
+    df = df.sort_values(by="release_created_at")
     # df = df.reset_index()
     # df = df.reset_index(drop=True)
 
     # change to compatible type and remove all data that has been incorrectly formated
-    df["created"] = pd.to_datetime(df["created"], utc=True).dt.date
+    df["release_created_at"] = pd.to_datetime(df["release_created_at"], utc=True).dt.date
     df = df[df.created < dt.date.today()]
 
     pic = []
 
     for i, r in enumerate(repos):
         # convert series to a dataframe
-        c_df = pd.DataFrame(df.loc[df["id"] == r]).reset_index(drop=True)
+        c_df = pd.DataFrame(df.loc[df["release_id"] == r]).reset_index(drop=True)
 
         # bytes buffer to be written to
         b = io.BytesIO()

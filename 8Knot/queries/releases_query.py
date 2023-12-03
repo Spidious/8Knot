@@ -19,7 +19,7 @@ TODO:
 (7) delete this list when completed
 """
 
-QUERY_NAME = "bus_factor"
+QUERY_NAME = "release_frequencey"
 
 
 @celery_app.task(
@@ -29,7 +29,7 @@ QUERY_NAME = "bus_factor"
     retry_kwargs={"max_retries": 5},
     retry_jitter=True,
 )
-def bus_factor_query(self, repos):
+def brelease_frequencey_query(self, repos):
     """
     (Worker Query)
     Executes SQL query against Augur database for contributor data.
@@ -48,25 +48,13 @@ def bus_factor_query(self, repos):
         return None
 
     query_string = f"""
-                    select
-                        inTable.cntrb_id,
-                        inTable.commit_count,
-                        inTable.created_at as created, 
-                        inTable.repo_id as id
-                    from
-                        (
-                        select cntrb_id, repo_id, count(*) as commit_count, created_at 
-                        from augur_data.explorer_contributor_actions
-                             where action = 'commit' and cntrb_id is not NULL 
-                                group by cntrb_id, repo_id, created_at 
-                       ) as inTable,
-                       augur_data.repo r
-                    where 
-                       r.repo_id = inTable.repo_id
-                       and
-                       r.repo_added is not NULL 
-                       and 
-                       r.repo_id in ({str(repos)[1:-1]}); 
+                    Select release_id, repo_id, release_created_at
+                    From augur_data.releases
+                    where release_is_draft = false
+                    group by release_id,repo_id
+                    Limit 20
+
+
                     """
                     # repo_id in ({str(repos)[1:-1]})
 
@@ -87,21 +75,21 @@ def bus_factor_query(self, repos):
     # pandas column and format updates
     #Commonly used df updates:
 
-    df["cntrb_id"] = df["cntrb_id"].astype(str)  # contributor ids to strings
-    df["cntrb_id"] = df["cntrb_id"].str[:15]
-    df = df.sort_values(by="created")
+    df["release_id"] = df["release_id"].astype(str)  # contributor ids to strings
+    df["release_id"] = df["release_id"].str[:15]
+    df = df.sort_values(by="release_created_at")
     # df = df.reset_index()
     # df = df.reset_index(drop=True)
 
     # change to compatible type and remove all data that has been incorrectly formated
-    df["created"] = pd.to_datetime(df["created"], utc=True).dt.date
+    df["release_created_at"] = pd.to_datetime(df["release_created_at"], utc=True).dt.date
     df = df[df.created < dt.date.today()]
 
     pic = []
 
     for i, r in enumerate(repos):
         # convert series to a dataframe
-        c_df = pd.DataFrame(df.loc[df["id"] == r]).reset_index(drop=True)
+        c_df = pd.DataFrame(df.loc[df["release_id"] == r]).reset_index(drop=True)
 
         # bytes buffer to be written to
         b = io.BytesIO()
@@ -123,7 +111,7 @@ def bus_factor_query(self, repos):
 
     # 'ack' is a boolean of whether data was set correctly or not.
     ack = cm_o.setm(
-        func=bus_factor_query,
+        func=releases_query,
         repos=repos,
         datas=pic,
     )
