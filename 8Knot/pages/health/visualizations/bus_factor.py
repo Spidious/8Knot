@@ -188,8 +188,27 @@ def process_data(df: pd.DataFrame, interval):
     # order values chronologically by COLUMN_TO_SORT_BY date
     df = df.sort_values(by="created", axis=0, ascending=True)
 
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
+    
+    
+    # Work on cutting off the bottom half of values
 
+    # # setup the halfway point and other variables
+    # half = (df['commit_count'].sum())/2
+    # outList = []
+
+    # # keep adding all values of the input list to the output list until the sum is >= half
+    # for row in df['commit_count'].values:
+    #     if sum(outList) < half:
+    #         outList.append(row)
+    #     else:
+    #         break
+    
+    # # Set outList to the df
+    # df['counts'] = outList
+    # df['id'] = (df['id'].tolist())[:len(outList)]
+
+
+    
     
 
     return df
