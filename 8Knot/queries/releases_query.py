@@ -50,7 +50,7 @@ def brelease_frequencey_query(self, repos):
     query_string = f"""
                     Select release_id, repo_id, release_created_at
                     From augur_data.releases
-                    where release_is_draft = false
+                    Where release_is_draft = false
                     group by release_id,repo_id
                     Limit 20
 
