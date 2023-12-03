@@ -8,7 +8,7 @@ import logging
 from dateutil.relativedelta import *  # type: ignore
 import plotly.express as px
 from pages.utils.graph_utils import get_graph_time_values, color_seq
-from queries.contributors_query import contributors_query as ctq
+from queries.busFactor import bus_factor_query as bfq
 import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
@@ -150,10 +150,10 @@ def toggle_popover(n, is_open):
 def time_to_first_response_graph(repolist, interval):
     # wait for data to asynchronously download and become available.
     cache = cm()
-    df = cache.grabm(func=ctq, repos=repolist)
+    df = cache.grabm(func=bfq, repos=repolist)
     while df is None:
         time.sleep(1.0)
-        df = cache.grabm(func=ctq, repos=repolist)
+        df = cache.grabm(func=bfq, repos=repolist)
 
     start = time.perf_counter()
     logging.warning(f"{VIZ_ID}- START")
@@ -166,7 +166,7 @@ def time_to_first_response_graph(repolist, interval):
     # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
     df = process_data(df, interval)
 
-    fig = create_figure(df, interval)
+    fig = create_figure(df)
 
     logging.warning(f"{VIZ_ID} - END - {time.perf_counter() - start}")
     return fig
@@ -186,17 +186,24 @@ def process_data(df: pd.DataFrame, interval):
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
 
-    
+    print(f"#################################################################\n#################################################################\n{df['cmt_count']}\n#################################################################\n#################################################################\n")
 
     return df
 
 
-def create_figure(df: pd.DataFrame, interval):
-    # time values for graph
-    x_r, x_name, hover, period = get_graph_time_values(interval)
+def create_figure(df: pd.DataFrame):
 
     # graph generation
-    fig = fig
+    fig = px.pie(df, 
+                values="cmt_count", 
+                names="cmt_author_name",
+                color_discrete_sequence=color_seq
+                )
+    fig.update_traces(
+        textposition="inside",
+        textinfo="percent+label",
+        hovertemplate="%{label} <br>Commits: %{value}<br><extra></extra>",
+    )
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
 
