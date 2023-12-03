@@ -8,7 +8,7 @@ import logging
 from dateutil.relativedelta import *  # type: ignore
 import plotly.express as px
 from pages.utils.graph_utils import get_graph_time_values, color_seq
-from queries.contributors_query import contributors_query as ctq
+from queries.releases_query import release_frequencey_query as rfq
 import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
@@ -150,10 +150,10 @@ def toggle_popover(n, is_open):
 def time_to_first_response_graph(repolist, interval):
     # wait for data to asynchronously download and become available.
     cache = cm()
-    df = cache.grabm(func=ctq, repos=repolist)
+    df = cache.grabm(func=rfq, repos=repolist)
     while df is None:
         time.sleep(1.0)
-        df = cache.grabm(func=ctq, repos=repolist)
+        df = cache.grabm(func=rfq, repos=repolist)
 
     start = time.perf_counter()
     logging.warning(f"{VIZ_ID}- START")
@@ -179,12 +179,14 @@ def process_data(df: pd.DataFrame, interval):
 
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
-    df["release_published_at"] = pd.to_datetime(df["release_published_at"], utc=True)
+    df["created"] = pd.to_datetime(df["created"], utc=True)
 
     # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created_at", axis=0, ascending=True)
+    df = df.sort_values(by="created", axis=0, ascending=True)
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
+    
+
 
     return df
 
@@ -196,8 +198,8 @@ def create_figure(df: pd.DataFrame, interval):
     # graph geration
     fig = px.bar(
         df,
-        x="Date",
-        y="Releases",
+        x="created",
+        y="id",
         range_x=x_r,
         labels={"x": x_name, "y": "Releasess"},
         color_discrete_sequence=[color_seq[3]],

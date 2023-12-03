@@ -29,7 +29,7 @@ QUERY_NAME = "release_frequencey"
     retry_kwargs={"max_retries": 5},
     retry_jitter=True,
 )
-def brelease_frequencey_query(self, repos):
+def release_frequencey_query(self, repos):
     """
     (Worker Query)
     Executes SQL query against Augur database for contributor data.
@@ -48,13 +48,12 @@ def brelease_frequencey_query(self, repos):
         return None
 
     query_string = f"""
-                    Select release_id, repo_id, release_created_at
+                    Select 
+		                release_created_at::date as created,
+                        count(*) as id
                     From augur_data.releases
-                    Where release_is_draft = false
-                    group by release_id,repo_id
-                    Limit 20
-
-
+	                    Where release_is_draft = false
+                    group by created
                     """
                     # repo_id in ({str(repos)[1:-1]})
 
