@@ -114,7 +114,7 @@ gc_release_frequency = dbc.Card(
                             ],
                             align="center",
                         ),
-                        "line graph",
+                        "Bar graph",
                     ]
                 ),
             ]
@@ -179,10 +179,10 @@ def process_data(df: pd.DataFrame, interval):
 
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
-    df["created"] = pd.to_datetime(df["created"], utc=True)
+    df["created_month"] = pd.to_datetime(df["created_month"], utc=True)
 
     # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created", axis=0, ascending=True)
+    df = df.sort_values(by="created_month", axis=0, ascending=True)
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
     
@@ -198,29 +198,13 @@ def create_figure(df: pd.DataFrame, interval):
     # graph geration
     fig = px.bar(
         df,
-        x="created",
-        y="id",
-        range_x=x_r,
-        labels={"x": x_name, "y": "Releasess"},
-        color_discrete_sequence=[color_seq[3]],
+        x=["1","2"],
+        y=[1,2],
+        labels={"x": "Date", "y": "Releases"}
     )
     fig.update_traces(hovertemplate=hover + "<br>Releases: %{y}<br>")
-    fig.update_xaxes(
-        showgrid=True,
-        ticklabelmode="period",
-        dtick=period,
-        rangeslider_yaxis_rangemode="match",
-        range=x_r,
-    )
-    fig.update_layout(
-        xaxis_title=x_name,
-        yaxis_title="Number of Releases",
-        margin_b=40,
-        margin_r=20,
-        font=dict(size=14),
-    )
+    
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
 
     return fig
-#dddddd

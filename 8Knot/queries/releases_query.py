@@ -48,12 +48,12 @@ def release_frequencey_query(self, repos):
         return None
 
     query_string = f"""
-                    Select 
-		                release_created_at::date as created,
-                        count(*) as id
-                    From augur_data.releases
-	                    Where release_is_draft = false
-                    group by created
+                SELECT DATE_TRUNC('month', release_created_at)::date AS created_month,
+                COUNT(*) AS total_releases
+                FROM augur_data.releases
+                WHERE release_is_draft = false
+                GROUP BY created_month
+                LIMIT 20;
                     """
                     # repo_id in ({str(repos)[1:-1]})
 
@@ -74,21 +74,21 @@ def release_frequencey_query(self, repos):
     # pandas column and format updates
     #Commonly used df updates:
 
-    df["release_id"] = df["release_id"].astype(str)  # contributor ids to strings
-    df["release_id"] = df["release_id"].str[:15]
-    df = df.sort_values(by="release_created_at")
+    df["creted_month"] = df["created_month"].astype(str)  # contributor ids to strings
+    df["created_month"] = df["created_month"].str[:15]
+    df = df.sort_values(by="created_month")
     # df = df.reset_index()
     # df = df.reset_index(drop=True)
 
     # change to compatible type and remove all data that has been incorrectly formated
-    df["release_created_at"] = pd.to_datetime(df["release_created_at"], utc=True).dt.date
+    df["created_month"] = pd.to_datetime(df["created_month"], utc=True).dt.date
     df = df[df.created < dt.date.today()]
 
     pic = []
 
     for i, r in enumerate(repos):
         # convert series to a dataframe
-        c_df = pd.DataFrame(df.loc[df["release_id"] == r]).reset_index(drop=True)
+        c_df = pd.DataFrame(df.loc[df["created_month"] == r]).reset_index(drop=True)
 
         # bytes buffer to be written to
         b = io.BytesIO()
@@ -110,7 +110,7 @@ def release_frequencey_query(self, repos):
 
     # 'ack' is a boolean of whether data was set correctly or not.
     ack = cm_o.setm(
-        func=releases_query,
+        func= release_frequencey_query,
         repos=repos,
         datas=pic,
     )
