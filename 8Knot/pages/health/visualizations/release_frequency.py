@@ -147,7 +147,7 @@ def toggle_popover(n, is_open):
     ],
     background=True,
 )
-def time_to_first_response_graph(repolist, interval):
+def release_frequency_graph(repolist, interval):
     # wait for data to asynchronously download and become available.
     cache = cm()
     df = cache.grabm(func=rfq, repos=repolist)
@@ -166,7 +166,7 @@ def time_to_first_response_graph(repolist, interval):
     # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
     df = process_data(df, interval)
 
-    fig = create_figure(df, interval)
+    fig = create_figure(df)
 
     logging.warning(f"{VIZ_ID} - END - {time.perf_counter() - start}")
     return fig
@@ -179,10 +179,10 @@ def process_data(df: pd.DataFrame, interval):
 
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
-    df["created_month"] = pd.to_datetime(df["created_month"], utc=True)
+    # df["created_month"] = pd.to_datetime(df["created_month"], utc=True)
 
     # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created_month", axis=0, ascending=True)
+    # df = df.sort_values(by="created_month", axis=0, ascending=True)
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
     
@@ -191,20 +191,35 @@ def process_data(df: pd.DataFrame, interval):
     return df
 
 
-def create_figure(df: pd.DataFrame, interval):
-    # time values for graph
-    x_r, x_name, hover, period = get_graph_time_values(interval)
+def create_figure(df: pd.DataFrame):
+    # # time values for graph
+    # x_r, x_name, hover, period = get_graph_time_values(interval)
 
-    # graph geration
-    fig = px.bar(
-        df,
-        x=["1","2"],
-        y=[1,2],
-        labels={"x": "Date", "y": "Releases"}
-    )
-    fig.update_traces(hovertemplate=hover + "<br>Releases: %{y}<br>")
+    # # graph geration
+    # fig = px.bar(
+    #     x=["1","2"],
+    #     y=[1,2],
+    #     labels={"x": "Date", "y": "Releases"}
+    # )
+    # fig.update_traces(hovertemplate=hover + "<br>Releases: %{y}<br>")
     
 
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
+    # """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
+
+    # return fig
+    # graph generation
+
+    fig = px.bar(x=['1', '2', '3', '4'], y=['1', '2', '3', '4'])
+    fig.update_xaxes(rangeslider_visible=True, range=[-0.5, 15])
+    fig.update_layout(
+        xaxis_title="Domains",
+        yaxis_title="Contributions",
+        bargroupgap=0.1,
+        margin_b=40,
+        font=dict(size=14),
+    )
+    fig.update_traces(
+        hovertemplate="%{label} <br>Contributions: %{value}<br><extra></extra>",
+    )
 
     return fig
