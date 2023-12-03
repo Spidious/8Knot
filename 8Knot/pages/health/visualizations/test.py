@@ -1,19 +1,9 @@
 import plotly.express as px
 import pandas as pd
 
-data = {
-  "calories": [420, 380, 390, 420],
-  "duration": [50, 40, 45, 50]
-}
+df = pd.DataFrame({"name": ["Luke", "Mark", "Anna", "Laura", "Lydia", "Grant", "Lisa", "Ted"], "number": ["5", "2", "3", "4", "1", "6", "7", "8"]})
 
-#load data into a DataFrame object:
-df = pd.DataFrame(data)
+new = df['name'].tolist()
+df['new'] = (df['name'].tolist())[:int(len(df['name'].tolist())/3)]
 
-
-
-# graph generation
-fig = px.pie(df,
-            values="calories",
-            names="duration")
-
-fig.show()
+pass

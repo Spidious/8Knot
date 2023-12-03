@@ -8,11 +8,13 @@ import logging
 from dateutil.relativedelta import *  # type: ignore
 import plotly.express as px
 from pages.utils.graph_utils import get_graph_time_values, color_seq
-from queries.busFactor import bus_factor_query as bfq
+#from queries.contributors_query import contributors_query as ctq
+from queries.bus_factor_query import bus_factor_query as bfq
 import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
 import time
+import datetime as dt 
 
 """
 NOTE: VARIABLES TO CHANGE:
@@ -164,47 +166,88 @@ def time_to_first_response_graph(repolist, interval):
         return nodata_graph
 
     # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
-    df = process_data(df, interval)
+    df = process_data_bf(df, interval)
 
-    fig = create_figure(df)
+    fig = create_figured(df)
 
     logging.warning(f"{VIZ_ID} - END - {time.perf_counter() - start}")
     return fig
 
 
-def process_data(df: pd.DataFrame, interval):
+def process_data_bf(df: pd.DataFrame, interval):
     """Implement your custom data-processing logic in this function.
     The output of this function is the data you intend to create a visualization with,
     requiring no further processing."""
 
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
-    df["created_at"] = pd.to_datetime(df["created_at"], utc=True)
+    #df["created_at"] = pd.to_datetime(df["created_at"], utc=True)
+    df = df[pd.to_datetime(df.created).dt.date >= (dt.date.today() - dt.timedelta(days=365))]
+
 
     # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created_at", axis=0, ascending=True)
+    df = df.sort_values(by="created", axis=0, ascending=True)
 
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
+    
+    
+    # Work on cutting off the bottom half of values
 
-    print(f"#################################################################\n#################################################################\n{df['cmt_count']}\n#################################################################\n#################################################################\n")
+    # # setup the halfway point and other variables
+    # df['commit_count'] = (df['commit_count'].tolist())[:int(len(df['commit_count'].tolist())/4)]
+    # length = int(len(df['commit_count'].tolist()))
+    commits = [int(i) for i in df['commit_count'].tolist()]
+    busValue = sum(commits)/2
 
-    return df
+    outList = []
+    for contributor in commits:
+        if sum(outList) < busValue:
+            outList.append(contributor)
+        else:
+            break
+
+    # newCommits = (df['commit_count'].tolist())[:length]
+    
+    
+    
+    length = len(outList)
+    newIds = (df['id'].tolist())[:length]
+    newDates = (df['created'].tolist())[:length]
 
 
-def create_figure(df: pd.DataFrame):
 
+
+
+    ndf = pd.DataFrame({"commits":outList, "id":newIds, "created":newDates})
+
+    # half = (df['commit_count'].sum())/2
+    # outList = []
+
+    # # keep adding all values of the input list to the output list until the sum is >= half
+    # for row in df['commit_count'].values:
+    #     if sum(outList) < half:
+    #         outList.append(row)
+    #     else:
+    #         break
+    
+    # # Set outList to the df
+    # df['counts'] = outList
+    # df['id'] = (df['id'].tolist())[:len(outList)]
+
+
+    
+    
+
+    return ndf
+
+
+def create_figured(df: pd.DataFrame):
     # graph generation
-    fig = px.pie(df, 
-                values="cmt_count", 
-                names="cmt_author_name",
-                color_discrete_sequence=color_seq
-                )
+    fig = px.pie(values=df['commits'],
+                names=df['id'])
     fig.update_traces(
-        textposition="inside",
-        textinfo="percent+label",
-        hovertemplate="%{label} <br>Commits: %{value}<br><extra></extra>",
+                textposition="inside",  
+                textinfo="percent+label",
+                hovertemplate="%{label} <br>Commits: %{value}<br><extra></extra>",
     )
-
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
 
     return fig

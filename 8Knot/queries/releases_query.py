@@ -9,17 +9,17 @@ from sqlalchemy.exc import SQLAlchemyError
 
 """
 TODO:
- - (1) update QUERY_NAME
- - (2) update 'bus_factor_query' found in function definition and in the function call that sets the 'ack' variable below.
-    'NAME' should be the same as QUERY_NAME
+(1) update QUERY_NAME
+(2) update 'NAME_query' found in function definition and in the function call that sets the 'ack' variable below.
+'NAME' should be the same as QUERY_NAME
 (3) paste SQL query in the query_string
- - (4) insert any necessary df column name or format changed under the pandas column and format updates comment
+(4) insert any necessary df column name or format changed under the pandas column and format updates comment
 (5) reset df index if #4 is performed via "df = df.reset_index(drop=True)"
-(6) go to index/index_callbacks.py and import the bus_factor_query as a unqiue acronym and add it to the QUERIES list
+(6) go to index/index_callbacks.py and import the NAME_query as a unqiue acronym and add it to the QUERIES list
 (7) delete this list when completed
 """
 
-QUERY_NAME = "bus_factor"
+QUERY_NAME = "NAME"
 
 
 @celery_app.task(
@@ -29,7 +29,7 @@ QUERY_NAME = "bus_factor"
     retry_kwargs={"max_retries": 5},
     retry_jitter=True,
 )
-def bus_factor_query(self, repos):
+def NAME_query(self, repos):
     """
     (Worker Query)
     Executes SQL query against Augur database for contributor data.
@@ -48,11 +48,13 @@ def bus_factor_query(self, repos):
         return None
 
     query_string = f"""
-                    SELECT c.cmt_author_name, count(c.cmt_id) AS cmt_count
-                    FROM commits c
-                    GROUP BY c.cmt_author_name
-                    """
-                    # repo_id in ({str(repos)[1:-1]})
+                    SELECT
+
+                    FROM
+
+                    WHERE
+                        repo_id in ({str(repos)[1:-1]})
+                """
 
     try:
         dbm = AugurManager()
@@ -69,14 +71,15 @@ def bus_factor_query(self, repos):
     df = dbm.run_query(query_string)
 
     # pandas column and format updates
-    #Commonly used df updates:
+    """Commonly used df updates:
 
-    # df["cntrb_id"] = df["cntrb_id"].astype(str)  # contributor ids to strings
-    # df["cntrb_id"] = df["cntrb_id"].str[:15]
+    df["cntrb_id"] = df["cntrb_id"].astype(str)  # contributor ids to strings
+    df["cntrb_id"] = df["cntrb_id"].str[:15]
     df = df.sort_values(by="created")
-    # df = df.reset_index()
-    # df = df.reset_index(drop=True)
+    df = df.reset_index()
+    df = df.reset_index(drop=True)
 
+    """
     # change to compatible type and remove all data that has been incorrectly formated
     df["created"] = pd.to_datetime(df["created"], utc=True).dt.date
     df = df[df.created < dt.date.today()]
@@ -107,7 +110,7 @@ def bus_factor_query(self, repos):
 
     # 'ack' is a boolean of whether data was set correctly or not.
     ack = cm_o.setm(
-        func=bus_factor_query,
+        func=NAME_query,
         repos=repos,
         datas=pic,
     )
