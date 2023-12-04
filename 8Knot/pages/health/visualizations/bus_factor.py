@@ -8,8 +8,8 @@ import logging
 from dateutil.relativedelta import *  # type: ignore
 import plotly.express as px
 from pages.utils.graph_utils import get_graph_time_values, color_seq
-
-
+#from queries.contributors_query import contributors_query as ctq
+from queries.bus_factor_query import bus_factor_query as bfq
 import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
@@ -166,7 +166,7 @@ def time_to_first_response_graph(repolist, interval):
         return nodata_graph
 
     # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
-    df = process_data(df, interval)
+    df = process_data_bf(df, interval)
 
     fig = create_figured(df)
 
@@ -174,7 +174,7 @@ def time_to_first_response_graph(repolist, interval):
     return fig
 
 
-def process_data(df: pd.DataFrame, interval):
+def process_data_bf(df: pd.DataFrame, interval):
     """Implement your custom data-processing logic in this function.
     The output of this function is the data you intend to create a visualization with,
     requiring no further processing."""
@@ -186,7 +186,7 @@ def process_data(df: pd.DataFrame, interval):
 
 
     # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created", axis=0, ascending=True)
+    df = df.sort_values(by="commit_count", axis=0, ascending=False)
 
     
     
@@ -195,29 +195,31 @@ def process_data(df: pd.DataFrame, interval):
     # # setup the halfway point and other variables
     # df['commit_count'] = (df['commit_count'].tolist())[:int(len(df['commit_count'].tolist())/4)]
     # length = int(len(df['commit_count'].tolist()))
-    # commits = [int(i) for i in df['commit_count'].tolist()]
-    # busValue = sum(commits)/2
+    commits = [int(i) for i in df['commit_count'].tolist()]
+    busValue = sum(commits)/2
 
-    # outList = []
-    # for contributor in commits:
-    #     if sum(outList) < busValue:
-    #         outList.append(contributor)
-    #     else:
-    #         break
+    outList = []
+    nameList = []
+    for contributor in commits:
+        if sum(outList) < busValue:
+            outList.append(contributor)
+            nameList.append(contributor)
+        else:
+            break
 
-    # # newCommits = (df['commit_count'].tolist())[:length]
+    # newCommits = (df['commit_count'].tolist())[:length]
     
     
     
-    # length = len(outList)
-    # newIds = (df['id'].tolist())[:length]
-    # newDates = (df['created'].tolist())[:length]
+    length = len(outList)
+    newIds = [int(i) for i in df['id'].tolist()][:length]
+    newDates = [int(i) for i in df['commit_count'].tolist()][:length]
 
 
 
 
 
-    # ndf = pd.DataFrame({"commits":outList, "id":newIds, "created":newDates})
+    ndf = pd.DataFrame({"commits":outList, "id":newIds, "created":newDates})
 
     # half = (df['commit_count'].sum())/2
     # outList = []
@@ -232,12 +234,17 @@ def process_data(df: pd.DataFrame, interval):
     # # Set outList to the df
     # df['counts'] = outList
     # df['id'] = (df['id'].tolist())[:len(outList)]
-    return df
+
+
+    
+    
+
+    return ndf
 
 
 def create_figured(df: pd.DataFrame):
     # graph generation
-    fig = px.pie(values=df['commit_count'],
+    fig = px.pie(values=df['commits'],
                 names=df['id'])
     fig.update_traces(
                 textposition="inside",  
