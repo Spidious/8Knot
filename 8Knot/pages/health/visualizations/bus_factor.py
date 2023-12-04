@@ -149,7 +149,7 @@ def toggle_popover(n, is_open):
     ],
     background=True,
 )
-def bus_factor_graph(repolist, interval):
+def time_to_first_response_graph(repolist, interval):
     # wait for data to asynchronously download and become available.
     cache = cm()
     df = cache.grabm(func=bfq, repos=repolist)
@@ -166,7 +166,7 @@ def bus_factor_graph(repolist, interval):
         return nodata_graph
 
     # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
-    df = process_data_bf(df, interval)
+    df = process_data(df, interval)
 
     fig = create_figured(df)
 
@@ -174,7 +174,7 @@ def bus_factor_graph(repolist, interval):
     return fig
 
 
-def process_data_bf(df: pd.DataFrame, interval):
+def process_data(df: pd.DataFrame, interval):
     """Implement your custom data-processing logic in this function.
     The output of this function is the data you intend to create a visualization with,
     requiring no further processing."""
@@ -193,32 +193,6 @@ def process_data_bf(df: pd.DataFrame, interval):
     # Work on cutting off the bottom half of values
 
     # # setup the halfway point and other variables
-    # df['commit_count'] = (df['commit_count'].tolist())[:int(len(df['commit_count'].tolist())/4)]
-    # length = int(len(df['commit_count'].tolist()))
-    commits = [int(i) for i in df['commit_count'].tolist()]
-    busValue = sum(commits)/2
-
-    outList = []
-    for contributor in commits:
-        if sum(outList) < busValue:
-            outList.append(contributor)
-        else:
-            break
-
-    # newCommits = (df['commit_count'].tolist())[:length]
-    
-    
-    
-    length = len(outList)
-    newIds = (df['id'].tolist())[:length]
-    newDates = (df['created'].tolist())[:length]
-
-
-
-
-
-    ndf = pd.DataFrame({"commits":outList, "id":newIds, "created":newDates})
-
     # half = (df['commit_count'].sum())/2
     # outList = []
 
@@ -237,12 +211,12 @@ def process_data_bf(df: pd.DataFrame, interval):
     
     
 
-    return ndf
+    return df
 
 
 def create_figured(df: pd.DataFrame):
     # graph generation
-    fig = px.pie(values=df['commits'],
+    fig = px.pie(values=df['commit_count'],
                 names=df['id'])
     fig.update_traces(
                 textposition="inside",  
