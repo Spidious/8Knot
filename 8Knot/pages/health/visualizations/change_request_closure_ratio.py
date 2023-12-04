@@ -276,21 +276,52 @@ def create_figure(
 
     # graph generation
     # fig = fig
+    fig = go.Figure()
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
-
-    fig = go.Figure()
+    
+    """
+        fig.update_layout(
+        xaxis_title=x_name,
+        yaxis_title="Number of PRs",
+        bargroupgap=0.1,
+        margin_b=40,
+        font=dict(size=14),
+    )
     fig.add_trace(
         go.Scatter(
             x=df_ratio["Date"],
             y=df_ratio["Ratio"],
             mode="lines",
-            marker=dict(color=color_seq[5]),
+            marker=dict(color=color_seq[1]),
             name="Open",
             hovertemplate="PRs Open: %{y}<br>%{x|%b %d, %Y} <extra></extra>",
         )
     )
+    fig.update_layout(yaxis_range=[-0.05,1.05])
+    """
+    
+    fig.add_trace(
+        go.Scatter(
 
+        )
+    )
+
+    fig = go.Figure(
+        [
+            go.Scatter(
+                x=df_ratio["Date"],
+                y=df_ratio["Ratio"],
+                mode="markers",
+                marker=dict(color=color_seq[1]),
+                name="Open",
+                hovertemplate="PRs Closed vs Opened: %{y}<br>%{x|%b %d, %Y} <extra></extra>",
+            )
+        ]
+    )
+    
+    fig.update_traces(marker_size=5)
+    fig.update_layout(yaxis_range=[-0.05,1.05])
     return fig
 
 # for each day, this function calculates the amount of open prs
