@@ -195,29 +195,29 @@ def process_data(df: pd.DataFrame, interval):
     # # setup the halfway point and other variables
     # df['commit_count'] = (df['commit_count'].tolist())[:int(len(df['commit_count'].tolist())/4)]
     # length = int(len(df['commit_count'].tolist()))
-    commits = [int(i) for i in df['commit_count'].tolist()]
-    busValue = sum(commits)/2
+    # commits = [int(i) for i in df['commit_count'].tolist()]
+    # busValue = sum(commits)/2
 
-    outList = []
-    for contributor in commits:
-        if sum(outList) < busValue:
-            outList.append(contributor)
-        else:
-            break
+    # outList = []
+    # for contributor in commits:
+    #     if sum(outList) < busValue:
+    #         outList.append(contributor)
+    #     else:
+    #         break
 
-    # newCommits = (df['commit_count'].tolist())[:length]
+    # # newCommits = (df['commit_count'].tolist())[:length]
     
     
     
-    length = len(outList)
-    newIds = (df['id'].tolist())[:length]
-    newDates = (df['created'].tolist())[:length]
+    # length = len(outList)
+    # newIds = (df['id'].tolist())[:length]
+    # newDates = (df['created'].tolist())[:length]
 
 
 
 
 
-    ndf = pd.DataFrame({"commits":outList, "id":newIds, "created":newDates})
+    # ndf = pd.DataFrame({"commits":outList, "id":newIds, "created":newDates})
 
     # half = (df['commit_count'].sum())/2
     # outList = []
@@ -232,7 +232,7 @@ def process_data(df: pd.DataFrame, interval):
     # # Set outList to the df
     # df['counts'] = outList
     # df['id'] = (df['id'].tolist())[:len(outList)]
-    return ndf
+    return df
 
 
 def create_figured(df: pd.DataFrame):
