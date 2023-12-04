@@ -234,9 +234,6 @@ def process_data_bf(df: pd.DataFrame, interval):
     # df['id'] = (df['id'].tolist())[:len(outList)]
 
 
-    
-    
-
     return ndf
 
 
