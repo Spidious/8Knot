@@ -244,8 +244,8 @@ def process_data_bf(df: pd.DataFrame, interval):
 
 def create_figured(df: pd.DataFrame):
     # graph generation
-    fig = px.pie(values=df['commits'],
-                names=df['id'])
+    fig = px.pie(df, values="commits",
+                names="id")
     fig.update_traces(
                 textposition="inside",  
                 textinfo="percent+label",
