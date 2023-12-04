@@ -74,8 +74,8 @@ def release_frequencey_query(self, repos):
     # pandas column and format updates
     #Commonly used df updates:
 
-    df["creted_month"] = df["created_month"].astype(str)  # contributor ids to strings
-    df["created_month"] = df["created_month"].str[:15]
+    #df["creted_month"] = df["created_month"].astype(str)  # contributor ids to strings
+    #df["created_month"] = df["created_month"].str[:15]
     df = df.sort_values(by="created_month")
     # df = df.reset_index()
     # df = df.reset_index(drop=True)

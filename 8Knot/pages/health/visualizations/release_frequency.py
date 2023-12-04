@@ -179,10 +179,10 @@ def process_data(df: pd.DataFrame, interval):
 
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
-    df["created_month"] = pd.to_datetime(df["created_month"], utc=True)
+    #df["created_month"] = pd.to_datetime(df["created_month"], utc=True)
 
     # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created_month", axis=0, ascending=True)
+    #df = df.sort_values(by="created_month", axis=0, ascending=True)
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
     
@@ -197,7 +197,6 @@ def create_figure(df: pd.DataFrame, interval):
 
     # graph geration
     fig = px.bar(
-        df,
         x=["1","2"],
         y=[1,2],
         labels={"x": "Date", "y": "Releases"}
