@@ -49,10 +49,12 @@ def release_frequencey_query(self, repos):
 
     query_string = f"""
                 SELECT DATE_TRUNC('month', release_created_at)::date AS created_month,
-                COUNT(*) AS total_releases
+                COUNT(*) AS total_releases, repo_id as id
                 FROM augur_data.releases
                 WHERE release_is_draft = false
-                GROUP BY created_month
+                AND
+                repo_id in ({str(repos)[1:-1]})
+                GROUP BY created_month,id
                 LIMIT 20;
                     """
                     # repo_id in ({str(repos)[1:-1]})
@@ -82,7 +84,7 @@ def release_frequencey_query(self, repos):
 
     # change to compatible type and remove all data that has been incorrectly formated
     df["created_month"] = pd.to_datetime(df["created_month"], utc=True).dt.date
-    df = df[df.created < dt.date.today()]
+    #df = df[df.created < dt.date.today()]
 
     pic = []
 

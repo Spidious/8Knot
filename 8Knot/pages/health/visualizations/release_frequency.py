@@ -13,6 +13,7 @@ import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
 import time
+import datetime as dt 
 
 """
 NOTE: VARIABLES TO CHANGE:
@@ -176,6 +177,8 @@ def process_data(df: pd.DataFrame, interval):
     """Implement your custom data-processing logic in this function.
     The output of this function is the data you intend to create a visualization with,
     requiring no further processing."""
+    
+    df = df[pd.to_datetime(df.created).dt.date >= (dt.date.today() - dt.timedelta(days=365))]
 
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
@@ -183,6 +186,8 @@ def process_data(df: pd.DataFrame, interval):
 
     # order values chronologically by COLUMN_TO_SORT_BY date
     df = df.sort_values(by="created_month", axis=0, ascending=True)
+    
+    
 
     """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
     
@@ -196,13 +201,6 @@ def create_figure(df: pd.DataFrame):
     # x_r, x_name, hover, period = get_graph_time_values(interval)
 
     # graph geration
-    fig = px.bar(
-        df,
-        x=["1","2"],
-        y=[1,2],
-        labels={"x": "Date", "y": "Releases"}
-    )
-    fig.update_traces(hovertemplate=hover + "<br>Releases: %{y}<br>")
     
 
     # """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
@@ -210,11 +208,11 @@ def create_figure(df: pd.DataFrame):
     # return fig
     # graph generation
 
-    fig = px.bar(x=['1', '2', '3', '4'], y=['1', '2', '3', '4'])
+    fig = px.bar(df,x="total_releases", y="id")
     fig.update_xaxes(rangeslider_visible=True, range=[-0.5, 15])
     fig.update_layout(
-        xaxis_title="Domains",
-        yaxis_title="Contributions",
+        xaxis_title="Repos",
+        yaxis_title="Releases",
         bargroupgap=0.1,
         margin_b=40,
         font=dict(size=14),
