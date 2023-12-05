@@ -165,7 +165,7 @@ def release_frequency_graph(repolist, interval):
         return nodata_graph
 
     # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
-    df = process_data(df, interval)
+    #df = process_data(df, interval)
 
     fig = create_figure(df)
 
@@ -178,7 +178,7 @@ def process_data(df: pd.DataFrame, interval):
     The output of this function is the data you intend to create a visualization with,
     requiring no further processing."""
     
-    df = df[pd.to_datetime(df.created).dt.date >= (dt.date.today() - dt.timedelta(days=365))]
+    #df = df[pd.to_datetime(df.created).dt.date >= (dt.date.today() - dt.timedelta(days=365))]
 
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
