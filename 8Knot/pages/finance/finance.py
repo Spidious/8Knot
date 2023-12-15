@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 import warnings
 
 # import visualization cards
-from .visualizations.contribution_attribution import gc_contribution_attribution
+from .visualizations.contribution_attribution import gc_contr_attr
 from .visualizations.labor_investment import gc_labor_investment
 from .visualizations.organizational_diversity import gc_Organizational_diversity
 from .visualizations.organizational_influence import gc_organizational_influence
@@ -18,7 +18,7 @@ layout = dbc.Container(
     [
         dbc.Row(
             [
-                dbc.Col(gc_contribution_attribution, width=6),
+                dbc.Col(gc_contr_attr, width=6),
                 dbc.Col(gc_labor_investment, width=6),
                 dbc.Col(gc_Organizational_diversity, width=6),
                 dbc.Col(gc_organizational_influence, width=6),

@@ -8,51 +8,17 @@ import logging
 from dateutil.relativedelta import *  # type: ignore
 import plotly.express as px
 from pages.utils.graph_utils import get_graph_time_values, color_seq
-from queries.contributors_query import contributors_query as ctq
+from queries.pr_assignee_query import pr_assignee_query as praq
 import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
 import time
+import datetime as dt
 
-"""
-NOTE: VARIABLES TO CHANGE:
+PAGE = "funding"
+VIZ_ID = "contr_attr"
 
-(1) PAGE
-(2) VIZ_ID
-(3) gc_VISUALIZATION
-(4) TITLE OF VISUALIZATION
-(5) CONTEXT OF GRAPH
-(6) IDs of Dash components
-(6) NAME_OF_VISUALIZATION_graph
-(7) COLUMN_WITH_DATETIME
-(8) COLUMN_WITH_DATETIME
-(9) COLUMN_TO_SORT_BY
-(10) Comments before callbacks
-(11) QUERY_USED, QUERY_NAME, QUERY_INITIALS
-
-NOTE: IMPORTING A VISUALIZATION INTO A PAGE
-(1) Include the visualization file in the visualization folder for the respective page
-(2) Import the visualization into the page_name.py file using "from .visualizations.visualization_file_name import gc_visualization_name"
-(3) Add the card into a column in a row on the page
-
-NOTE: ADDITIONAL DASH COMPONENTS FOR USER GRAPH CUSTOMIZATIONS
-
-If you add Dash components (ie dbc.Input, dbc.RadioItems, dcc.DatePickerRange...) the ids, html_for, and targets should be in the
-following format: f"component-identifier-{PAGE}-{VIZ_ID}"
-
-NOTE: If you change or add a new query, you need to do "docker system prune -af" before building again
-
-For more information, check out the new_vis_guidance.md
-"""
-
-
-# TODO: Remove unused imports and edit strings and variables in all CAPS
-# TODO: Remove comments specific for the template
-
-PAGE = "finance"  # EDIT FOR CURRENT PAGE
-VIZ_ID = "contribution_attribution"  # UNIQUE IDENTIFIER FOR VIZUALIZATION
-
-gc_contribution_attribution = dbc.Card(
+gc_contr_attr = dbc.Card(
     [
         dbc.CardBody(
             [
@@ -64,7 +30,13 @@ gc_contribution_attribution = dbc.Card(
                 dbc.Popover(
                     [
                         dbc.PopoverHeader("Graph Info:"),
-                        dbc.PopoverBody("Context of graph"),
+                        dbc.PopoverBody(
+                            """
+                            Visualizes number of pull request reviews assigned to each each contributor\n
+                            in the specifed time bucket. The visualization only includes contributors\n
+                            that meet the user inputed the assignment criteria.
+                            """
+                        ),
                     ],
                     id=f"popover-{PAGE}-{VIZ_ID}",
                     target=f"popover-target-{PAGE}-{VIZ_ID}",
@@ -79,6 +51,37 @@ gc_contribution_attribution = dbc.Card(
                         dbc.Row(
                             [
                                 dbc.Label(
+                                    "Total Assignments Required:",
+                                    html_for=f"assignments-required-{PAGE}-{VIZ_ID}",
+                                    width={"size": "auto"},
+                                ),
+                                dbc.Col(
+                                    dbc.Input(
+                                        id=f"assignments-required-{PAGE}-{VIZ_ID}",
+                                        type="number",
+                                        min=1,
+                                        max=250,
+                                        step=1,
+                                        value=10,
+                                        size="sm",
+                                    ),
+                                    className="me-2",
+                                    width=1,
+                                ),
+                                dbc.Alert(
+                                    children="No contributors meet assignment requirement",
+                                    id=f"check-alert-{PAGE}-{VIZ_ID}",
+                                    dismissable=True,
+                                    fade=False,
+                                    is_open=False,
+                                    color="warning",
+                                ),
+                            ],
+                            align="center",
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Label(
                                     "Date Interval:",
                                     html_for=f"date-radio-{PAGE}-{VIZ_ID}",
                                     width="auto",
@@ -88,15 +91,12 @@ gc_contribution_attribution = dbc.Card(
                                         dbc.RadioItems(
                                             id=f"date-radio-{PAGE}-{VIZ_ID}",
                                             options=[
-                                                {
-                                                    "label": "Trend",
-                                                    "value": "D",
-                                                },  # TREND IF LINE, DAY IF NOT
-                                                # {"label": "Week","value": "W",}, UNCOMMENT IF APPLICABLE
+                                                {"label": "Trend", "value": "D"},
+                                                {"label": "Week", "value": "W"},
                                                 {"label": "Month", "value": "M"},
                                                 {"label": "Year", "value": "Y"},
                                             ],
-                                            value="M",
+                                            value="W",
                                             inline=True,
                                         ),
                                     ]
@@ -134,25 +134,24 @@ def toggle_popover(n, is_open):
     return is_open
 
 
-# callback for VIZ TITLE graph
+# callback for pull request review assignment graph
 @callback(
     Output(f"{PAGE}-{VIZ_ID}", "figure"),
-    # Output(f"check-alert-{PAGE}-{VIZ_ID}", "is_open"), USE WITH ADDITIONAL PARAMETERS
-    # if additional output is added, change returns accordingly
+    Output(f"check-alert-{PAGE}-{VIZ_ID}", "is_open"),
     [
         Input("repo-choices", "data"),
         Input(f"date-radio-{PAGE}-{VIZ_ID}", "value"),
-        # add additional inputs here
+        Input(f"assignments-required-{PAGE}-{VIZ_ID}", "value"),
     ],
     background=True,
 )
-def time_to_first_response_graph(repolist, interval):
+def cntrib_pr_assignment_graph(repolist, interval, assign_req):
     # wait for data to asynchronously download and become available.
     cache = cm()
-    df = cache.grabm(func=ctq, repos=repolist)
+    df = cache.grabm(func=praq, repos=repolist)
     while df is None:
         time.sleep(1.0)
-        df = cache.grabm(func=ctq, repos=repolist)
+        df = cache.grabm(func=praq, repos=repolist)
 
     start = time.perf_counter()
     logging.warning(f"{VIZ_ID}- START")
@@ -160,41 +159,191 @@ def time_to_first_response_graph(repolist, interval):
     # test if there is data
     if df.empty:
         logging.warning(f"{VIZ_ID} - NO DATA AVAILABLE")
-        return nodata_graph
+        return nodata_graph, False
 
-    # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
-    df = process_data(df, interval)
+    df = process_data(df, interval, assign_req)
 
     fig = create_figure(df, interval)
 
     logging.warning(f"{VIZ_ID} - END - {time.perf_counter() - start}")
-    return fig
+    return fig, False
 
 
-def process_data(df: pd.DataFrame, interval):
-    """Implement your custom data-processing logic in this function.
-    The output of this function is the data you intend to create a visualization with,
-    requiring no further processing."""
+def process_data(df: pd.DataFrame, interval, assign_req):
 
     # convert to datetime objects rather than strings
-    # ADD ANY OTHER COLUMNS WITH DATETIME
-    df["created_at"] = pd.to_datetime(df["created_at"], utc=True)
+    df["created"] = pd.to_datetime(df["created"], utc=True)
+    df["closed"] = pd.to_datetime(df["closed"], utc=True)
+    df["assign_date"] = pd.to_datetime(df["assign_date"], utc=True)
 
-    # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created_at", axis=0, ascending=True)
+    # order values chronologically by created date
+    df = df.sort_values(by="created", axis=0, ascending=True)
 
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
+    # drop all issues that have no assignments
+    df = df[~df.assignment_action.isnull()]
 
-    return df
+    # df of rows that are assignments
+    df_contrib = df[df["assignment_action"] == "assigned"]
+
+    # count the assignments total for each contributor
+    df_contrib = (
+        df_contrib["assignee"]
+        .value_counts()
+        .to_frame()
+        .reset_index()
+        .rename(columns={"assignee": "count", "index": "assignee"})
+    )
+
+    # create list of all contributors that meet the assignment requirement
+    contributors = df_contrib["assignee"][df_contrib["count"] >= assign_req].to_list()
+
+    # no update if there are not any contributors that meet the criteria
+    if len(contributors) == 0:
+        return dash.no_update, True
+
+    # only include contributors that meet the criteria
+    df = df.loc[df["assignee"].isin(contributors)]
+
+    # first and last elements of the dataframe are the
+    # earliest and latest events respectively
+    earliest = df["created"].min()
+    latest = max(df["created"].max(), df["closed"].max())
+
+    # generating buckets beginning to the end of time by the specified interval
+    dates = pd.date_range(start=earliest, end=latest, freq=interval, inclusive="both")
+
+    # df for pull request review assignments in date intervals
+    df_assign = dates.to_frame(index=False, name="start_date")
+
+    # offset end date column by interval
+    if interval == "D":
+        df_assign["end_date"] = df_assign.start_date + pd.DateOffset(days=1)
+    elif interval == "W":
+        df_assign["end_date"] = df_assign.start_date + pd.DateOffset(weeks=1)
+    elif interval == "M":
+        df_assign["end_date"] = df_assign.start_date + pd.DateOffset(months=1)
+    else:
+        df_assign["end_date"] = df_assign.start_date + pd.DateOffset(years=1)
+
+    # iterates through contributors and dates for assignment values
+    for contrib in contributors:
+        df_assign[contrib] = df_assign.apply(
+            lambda row: pr_assignment(df, row.start_date, row.end_date, contrib),
+            axis=1,
+        )
+
+    # formatting for graph generation
+    if interval == "M":
+        df_assign["start_date"] = df_assign["start_date"].dt.strftime("%Y-%m")
+    elif interval == "Y":
+        df_assign["start_date"] = df_assign["start_date"].dt.year
+
+    return df_assign
 
 
 def create_figure(df: pd.DataFrame, interval):
     # time values for graph
     x_r, x_name, hover, period = get_graph_time_values(interval)
 
-    # graph generation
-    fig = fig
+    # list of contributors for plot
+    contribs = df.columns.tolist()[2:]
 
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
+    # making a line graph if the bin-size is small enough.
+    if interval == "D":
+
+        # list of lines for plot
+        lines = []
+
+        # iterate through colors for lines
+        marker_val = 0
+
+        # loop to create lines for each contributors
+        for contrib in contribs:
+            line = go.Scatter(
+                name=contrib,
+                x=df["start_date"],
+                y=df[contrib],
+                mode="lines",
+                showlegend=True,
+                hovertemplate="PRs Assigned: %{y}<br>%{x|%b %d, %Y}",
+                marker=dict(color=color_seq[marker_val]),
+            )
+            lines.append(line)
+            marker_val = (marker_val + 1) % 6
+        fig = go.Figure(lines)
+    else:
+        fig = px.bar(
+            df,
+            x="start_date",
+            y=contribs,
+            color_discrete_sequence=color_seq,
+        )
+
+        # edit hover values
+        fig.update_traces(hovertemplate=hover + "<br>Prs Assigned: %{y}<br>")
+
+        fig.update_xaxes(
+            showgrid=True,
+            ticklabelmode="period",
+            dtick=period,
+            rangeslider_yaxis_rangemode="match",
+            range=x_r,
+        )
+
+    # layout specifics for both styles of plots
+    fig.update_layout(
+        xaxis_title="Time",
+        yaxis_title="PR Review Assignments",
+        legend_title="Contributor ID",
+        font=dict(size=14),
+    )
 
     return fig
+
+
+def pr_assignment(df, start_date, end_date, contrib):
+    """
+    This function takes a start and an end date and determines how many
+    prs that are open during that time interval and are currently assigned
+    to the contributor.
+
+    Args:
+    -----
+        df : Pandas Dataframe
+            Dataframe with issue assignment actions of the assignees
+
+        start_date : Datetime Timestamp
+            Timestamp of the start time of the time interval
+
+        end_date : Datetime Timestamp
+            Timestamp of the end time of the time interval
+
+        contrib : str
+            contrb_id for the contributor
+
+    Returns:
+    --------
+        int: Number of assignments to the contributor in the time window
+    """
+
+    # drop rows not by contrib
+    df = df[df["assignee"] == contrib]
+
+    # drop rows that are more recent than the end date
+    df_created = df[df["created"] <= end_date]
+
+    # Keep issues that were either still open after the 'start_date' or that have not been closed.
+    df_in_range = df_created[(df_created["closed"] > start_date) | (df_created["closed"].isnull())]
+
+    # get all issue unassignments and drop rows that have been unassigned more recent than the end date
+    df_unassign = df_in_range[
+        (df_in_range["assignment_action"] == "unassigned") & (df_in_range["assign_date"] <= end_date)
+    ]
+
+    # get all issue assignments and drop rows that have been assigned more recent than the end date
+    df_assigned = df_in_range[
+        (df_in_range["assignment_action"] == "assigned") & (df_in_range["assign_date"] <= end_date)
+    ]
+
+    # return the different of assignments and unassignments
+    return df_assigned.shape[0] - df_unassign.shape[0]
