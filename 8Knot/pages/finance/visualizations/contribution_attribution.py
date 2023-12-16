@@ -8,7 +8,7 @@ import logging
 from dateutil.relativedelta import *  # type: ignore
 import plotly.express as px
 from pages.utils.graph_utils import get_graph_time_values, color_seq
-from queries.cont_attrib import cont_attrib_query as caq
+from queries.company_query import company_query as caq
 import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
@@ -174,66 +174,12 @@ def process_data(df: pd.DataFrame, interval, assign_req):
     # convert to datetime objects rather than strings
     # df["created"] = pd.to_datetime(df["created"], utc=True)
 
-    return df
+    ndf = pd.DataFrame(data = {'employment': ['volunteer', 'sponsored'], 'count': [df['cntrb_company'].isnull().sum(), df['cntrb_company'].notnull().sum()]})
+
+    return ndf
 
 
 def create_figure(df: pd.DataFrame):
-    # time values for graph
-    # x_r, x_name, hover, period = get_graph_time_values(interval)
-# '''
-#     # list of contributors for plot
-#     contribs = df.columns.tolist()[2:]
-
-#     # making a line graph if the bin-size is small enough.
-#     if interval == "D":
-
-#         # list of lines for plot
-#         lines = []
-
-#         # iterate through colors for lines
-#         marker_val = 0
-
-#         # loop to create lines for each contributors
-#         for contrib in contribs:
-#             line = go.Scatter(
-#                 name=contrib,
-#                 x=df["start_date"],
-#                 y=df[contrib],
-#                 mode="lines",
-#                 showlegend=True,
-#                 hovertemplate="PRs Assigned: %{y}<br>%{x|%b %d, %Y}",
-#                 marker=dict(color=color_seq[marker_val]),
-#             )
-#             lines.append(line)
-#             marker_val = (marker_val + 1) % 6
-#         fig = go.Figure(lines)
-#     else:
-#         fig = px.bar(
-#             df,
-#             x="start_date",
-#             y=contribs,
-#             color_discrete_sequence=color_seq,
-#         )
-
-#         # edit hover values
-#         fig.update_traces(hovertemplate=hover + "<br>Prs Assigned: %{y}<br>")
-
-#         fig.update_xaxes(
-#             showgrid=True,
-#             ticklabelmode="period",
-#             dtick=period,
-#             rangeslider_yaxis_rangemode="match",
-#             range=x_r,
-#         )
-
-#     # layout specifics for both styles of plots
-#     fig.update_layout(
-#         xaxis_title="Time",
-#         yaxis_title="PR Review Assignments",
-#         legend_title="Contributor ID",
-#         font=dict(size=14),
-#     )'''
-
     fig = px.pie(df, values="count",
                 names="employment")
     fig.update_traces(
