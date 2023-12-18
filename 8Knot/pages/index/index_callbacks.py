@@ -28,7 +28,7 @@ import flask
 
 
 # list of queries to be run
-QUERIES = [iq, cq, cnq, prq, cmq, iaq, praq, prr, bfq,rfq]
+QUERIES = [iq, cq, cnq, prq, cmq, iaq, praq, prr, bfq, rfq]
 
 # check if login has been enabled in config
 login_enabled = os.getenv("AUGUR_LOGIN_ENABLED", "False") == "True"

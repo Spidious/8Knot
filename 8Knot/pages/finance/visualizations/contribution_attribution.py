@@ -8,51 +8,17 @@ import logging
 from dateutil.relativedelta import *  # type: ignore
 import plotly.express as px
 from pages.utils.graph_utils import get_graph_time_values, color_seq
-from queries.contributors_query import contributors_query as ctq
+from queries.company_query import company_query as caq
 import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
 import time
+import datetime as dt
 
-"""
-NOTE: VARIABLES TO CHANGE:
+PAGE = "funding"
+VIZ_ID = "contr_attr"
 
-(1) PAGE
-(2) VIZ_ID
-(3) gc_VISUALIZATION
-(4) TITLE OF VISUALIZATION
-(5) CONTEXT OF GRAPH
-(6) IDs of Dash components
-(6) NAME_OF_VISUALIZATION_graph
-(7) COLUMN_WITH_DATETIME
-(8) COLUMN_WITH_DATETIME
-(9) COLUMN_TO_SORT_BY
-(10) Comments before callbacks
-(11) QUERY_USED, QUERY_NAME, QUERY_INITIALS
-
-NOTE: IMPORTING A VISUALIZATION INTO A PAGE
-(1) Include the visualization file in the visualization folder for the respective page
-(2) Import the visualization into the page_name.py file using "from .visualizations.visualization_file_name import gc_visualization_name"
-(3) Add the card into a column in a row on the page
-
-NOTE: ADDITIONAL DASH COMPONENTS FOR USER GRAPH CUSTOMIZATIONS
-
-If you add Dash components (ie dbc.Input, dbc.RadioItems, dcc.DatePickerRange...) the ids, html_for, and targets should be in the
-following format: f"component-identifier-{PAGE}-{VIZ_ID}"
-
-NOTE: If you change or add a new query, you need to do "docker system prune -af" before building again
-
-For more information, check out the new_vis_guidance.md
-"""
-
-
-# TODO: Remove unused imports and edit strings and variables in all CAPS
-# TODO: Remove comments specific for the template
-
-PAGE = "finance"  # EDIT FOR CURRENT PAGE
-VIZ_ID = "contribution_attribution"  # UNIQUE IDENTIFIER FOR VIZUALIZATION
-
-gc_contribution_attribution = dbc.Card(
+gc_contr_attr = dbc.Card(
     [
         dbc.CardBody(
             [
@@ -64,7 +30,13 @@ gc_contribution_attribution = dbc.Card(
                 dbc.Popover(
                     [
                         dbc.PopoverHeader("Graph Info:"),
-                        dbc.PopoverBody("Context of graph"),
+                        dbc.PopoverBody(
+                            """
+                            Visualizes number of pull request reviews assigned to each each contributor\n
+                            in the specifed time bucket. The visualization only includes contributors\n
+                            that meet the user inputed the assignment criteria.
+                            """
+                        ),
                     ],
                     id=f"popover-{PAGE}-{VIZ_ID}",
                     target=f"popover-target-{PAGE}-{VIZ_ID}",
@@ -79,6 +51,37 @@ gc_contribution_attribution = dbc.Card(
                         dbc.Row(
                             [
                                 dbc.Label(
+                                    "Total Assignments Required:",
+                                    html_for=f"assignments-required-{PAGE}-{VIZ_ID}",
+                                    width={"size": "auto"},
+                                ),
+                                dbc.Col(
+                                    dbc.Input(
+                                        id=f"assignments-required-{PAGE}-{VIZ_ID}",
+                                        type="number",
+                                        min=1,
+                                        max=250,
+                                        step=1,
+                                        value=10,
+                                        size="sm",
+                                    ),
+                                    className="me-2",
+                                    width=1,
+                                ),
+                                dbc.Alert(
+                                    children="No contributors meet assignment requirement",
+                                    id=f"check-alert-{PAGE}-{VIZ_ID}",
+                                    dismissable=True,
+                                    fade=False,
+                                    is_open=False,
+                                    color="warning",
+                                ),
+                            ],
+                            align="center",
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Label(
                                     "Date Interval:",
                                     html_for=f"date-radio-{PAGE}-{VIZ_ID}",
                                     width="auto",
@@ -88,15 +91,12 @@ gc_contribution_attribution = dbc.Card(
                                         dbc.RadioItems(
                                             id=f"date-radio-{PAGE}-{VIZ_ID}",
                                             options=[
-                                                {
-                                                    "label": "Trend",
-                                                    "value": "D",
-                                                },  # TREND IF LINE, DAY IF NOT
-                                                # {"label": "Week","value": "W",}, UNCOMMENT IF APPLICABLE
+                                                {"label": "Trend", "value": "D"},
+                                                {"label": "Week", "value": "W"},
                                                 {"label": "Month", "value": "M"},
                                                 {"label": "Year", "value": "Y"},
                                             ],
-                                            value="M",
+                                            value="W",
                                             inline=True,
                                         ),
                                     ]
@@ -134,25 +134,24 @@ def toggle_popover(n, is_open):
     return is_open
 
 
-# callback for VIZ TITLE graph
+# callback for pull request review assignment graph
 @callback(
     Output(f"{PAGE}-{VIZ_ID}", "figure"),
-    # Output(f"check-alert-{PAGE}-{VIZ_ID}", "is_open"), USE WITH ADDITIONAL PARAMETERS
-    # if additional output is added, change returns accordingly
+    Output(f"check-alert-{PAGE}-{VIZ_ID}", "is_open"),
     [
         Input("repo-choices", "data"),
         Input(f"date-radio-{PAGE}-{VIZ_ID}", "value"),
-        # add additional inputs here
+        Input(f"assignments-required-{PAGE}-{VIZ_ID}", "value"),
     ],
     background=True,
 )
-def time_to_first_response_graph(repolist, interval):
+def cntrib_pr_assignment_graph(repolist, interval, assign_req):
     # wait for data to asynchronously download and become available.
     cache = cm()
-    df = cache.grabm(func=ctq, repos=repolist)
+    df = cache.grabm(func=caq, repos=repolist)
     while df is None:
         time.sleep(1.0)
-        df = cache.grabm(func=ctq, repos=repolist)
+        df = cache.grabm(func=caq, repos=repolist)
 
     start = time.perf_counter()
     logging.warning(f"{VIZ_ID}- START")
@@ -160,41 +159,33 @@ def time_to_first_response_graph(repolist, interval):
     # test if there is data
     if df.empty:
         logging.warning(f"{VIZ_ID} - NO DATA AVAILABLE")
-        return nodata_graph
+        return nodata_graph, False
 
-    # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
-    df = process_data(df, interval)
+    df = process_data(df, interval, assign_req)
 
-    fig = create_figure(df, interval)
+    fig = create_figure(df)
 
     logging.warning(f"{VIZ_ID} - END - {time.perf_counter() - start}")
-    return fig
+    return fig, False
 
 
-def process_data(df: pd.DataFrame, interval):
-    """Implement your custom data-processing logic in this function.
-    The output of this function is the data you intend to create a visualization with,
-    requiring no further processing."""
+def process_data(df: pd.DataFrame, interval, assign_req):
 
     # convert to datetime objects rather than strings
-    # ADD ANY OTHER COLUMNS WITH DATETIME
-    df["created_at"] = pd.to_datetime(df["created_at"], utc=True)
+    # df["created"] = pd.to_datetime(df["created"], utc=True)
 
-    # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created_at", axis=0, ascending=True)
+    ndf = pd.DataFrame(data = {'employment': ['volunteer', 'sponsored'], 'count': [df['cntrb_company'].isnull().sum(), df['cntrb_company'].notnull().sum()]})
 
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
-
-    return df
+    return ndf
 
 
-def create_figure(df: pd.DataFrame, interval):
-    # time values for graph
-    x_r, x_name, hover, period = get_graph_time_values(interval)
-
-    # graph generation
-    fig = fig
-
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
+def create_figure(df: pd.DataFrame):
+    fig = px.pie(df, values="count",
+                names="employment")
+    fig.update_traces(
+                textposition="inside",  
+                textinfo="percent+label",
+                hovertemplate="%{label} <br>Commits: %{value}<br><extra></extra>",
+    )
 
     return fig
