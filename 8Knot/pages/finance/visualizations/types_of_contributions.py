@@ -146,7 +146,7 @@ def toggle_popover(n, is_open):
     ],
     background=True,
 )
-def time_to_first_response_graph(repolist, interval):
+def types_of_contributions_graph(repolist, interval):
     # wait for data to asynchronously download and become available.
     cache = cm()
     df = cache.grabm(func=ctq, repos=repolist)

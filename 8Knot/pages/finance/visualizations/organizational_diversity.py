@@ -146,7 +146,7 @@ def toggle_popover(n, is_open):
     ],
     background=True,
 )
-def time_to_first_response_graph(repolist, interval):
+def organizational_diversity_graph(repolist, interval):
     # wait for data to asynchronously download and become available.
     cache = cm()
     df = cache.grabm(func=ctq, repos=repolist)

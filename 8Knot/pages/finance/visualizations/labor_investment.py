@@ -146,7 +146,7 @@ def toggle_popover(n, is_open):
     ],
     background=True,
 )
-def time_to_first_response_graph(repolist, interval):
+def labor_investment_graph(repolist, interval):
     # wait for data to asynchronously download and become available.
     cache = cm()
     df = cache.grabm(func=ctq, repos=repolist)
@@ -188,7 +188,7 @@ def process_data(df: pd.DataFrame, interval):
     return df
 
 
-def create_figurex(df: pd.DataFrame, interval):
+def create_figure(df: pd.DataFrame, interval):
     # time values for graph
     x_r, x_name, hover, period = get_graph_time_values(interval)
 

@@ -146,7 +146,7 @@ def toggle_popover(n, is_open):
     ],
     background=True,
 )
-def orginizational_influence(repolist, interval):
+def time_to_first_response_graph(repolist, interval):
     # wait for data to asynchronously download and become available.
     cache = cm()
     df = cache.grabm(func=cms, repos=repolist)
