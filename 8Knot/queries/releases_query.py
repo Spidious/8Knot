@@ -48,13 +48,13 @@ def release_frequencey_query(self, repos):
         return None
 
     query_string = f"""
-                SELECT DATE_TRUNC('month', release_created_at)::date AS created_month,
+                SELECT DATE_TRUNC('month', release_created_at)::date AS created,
                 COUNT(*) AS total_releases, repo_id as id
                 FROM augur_data.releases
                 WHERE release_is_draft = false
                 AND
                 repo_id in ({str(repos)[1:-1]})
-                GROUP BY created_month,id
+                GROUP BY created,id
                 LIMIT 20;
                     """
                     # repo_id in ({str(repos)[1:-1]})
@@ -78,19 +78,19 @@ def release_frequencey_query(self, repos):
 
     #df["creted_month"] = df["created_month"].astype(str)  # contributor ids to strings
     #df["created_month"] = df["created_month"].str[:15]
-    df = df.sort_values(by="created_month")
+    df = df.sort_values(by="created")
     # df = df.reset_index()
     # df = df.reset_index(drop=True)
 
     # change to compatible type and remove all data that has been incorrectly formated
-    df["created_month"] = pd.to_datetime(df["created_month"], utc=True).dt.date
+    #df["created_month"] = pd.to_datetime(df["created_month"], utc=True).dt.date
     #df = df[df.created < dt.date.today()]
 
     pic = []
 
     for i, r in enumerate(repos):
         # convert series to a dataframe
-        c_df = pd.DataFrame(df.loc[df["created_month"] == r]).reset_index(drop=True)
+        c_df = pd.DataFrame(df.loc[df["created"] == r]).reset_index(drop=True)
 
         # bytes buffer to be written to
         b = io.BytesIO()
@@ -117,5 +117,7 @@ def release_frequencey_query(self, repos):
         datas=pic,
     )
     logging.warning(f"{QUERY_NAME}_DATA_QUERY - END")
+    
+    print("ACK" , ack)
 
     return ack

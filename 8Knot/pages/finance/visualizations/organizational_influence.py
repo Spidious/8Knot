@@ -8,7 +8,7 @@ import logging
 from dateutil.relativedelta import *  # type: ignore
 import plotly.express as px
 from pages.utils.graph_utils import get_graph_time_values, color_seq
-from queries.contributors_query import contributors_query as ctq
+from queries.commits_query import commits_query as cms
 import io
 from cache_manager.cache_manager import CacheManager as cm
 from pages.utils.job_utils import nodata_graph
@@ -146,13 +146,13 @@ def toggle_popover(n, is_open):
     ],
     background=True,
 )
-def time_to_first_response_graph(repolist, interval):
+def orginizational_influence(repolist, interval):
     # wait for data to asynchronously download and become available.
     cache = cm()
-    df = cache.grabm(func=ctq, repos=repolist)
+    df = cache.grabm(func=cms, repos=repolist)
     while df is None:
         time.sleep(1.0)
-        df = cache.grabm(func=ctq, repos=repolist)
+        df = cache.grabm(func=cms, repos=repolist)
 
     start = time.perf_counter()
     logging.warning(f"{VIZ_ID}- START")
@@ -172,29 +172,51 @@ def time_to_first_response_graph(repolist, interval):
 
 
 def process_data(df: pd.DataFrame, interval):
-    """Implement your custom data-processing logic in this function.
-    The output of this function is the data you intend to create a visualization with,
-    requiring no further processing."""
 
-    # convert to datetime objects rather than strings
-    # ADD ANY OTHER COLUMNS WITH DATETIME
-    df["created_at"] = pd.to_datetime(df["created_at"], utc=True)
 
-    # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created_at", axis=0, ascending=True)
+    # create a new dataframe containing the number of commit per author from the top 500 contributors
+    df_new = (
+        df.groupby(by=[df["author_email"]])["commits"]
+        .nunique()
+        .reset_index()
+        .rename(columns={"author_email": "author"})
+        .sort_values(['commits'],ascending=False)
+        .head(500)
+    )   
+    
+   
+    return df_new
 
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR DATA PROCESS"""
 
-    return df
 
 
 def create_figure(df: pd.DataFrame, interval):
     # time values for graph
     x_r, x_name, hover, period = get_graph_time_values(interval)
 
-    # graph generation
-    fig = fig
-
-    """LOOK AT OTHER VISUALIZATIONS TO SEE IF ANY HAVE A SIMILAR GRAPH"""
+    # graph geration
+    fig = px.bar(
+        df,
+        x="author",
+        y="commits",
+        range_x=x_r,
+        labels={"x": x_name, "y": "Commits"},
+        color_discrete_sequence=[color_seq[4]],
+    )
+    fig.update_traces(hovertemplate=hover + "<br>Commits: %{y}<br>")
+    fig.update_xaxes(
+        showgrid=True,
+        ticklabelmode="period",
+        dtick=period,
+        rangeslider_yaxis_rangemode="match",
+        range=x_r,
+    )
+    fig.update_layout(
+        xaxis_title=x_name,
+        yaxis_title="Number of Commits",
+        margin_b=40,
+        margin_r=40,
+        font=dict(size=10),
+    )
 
     return fig
