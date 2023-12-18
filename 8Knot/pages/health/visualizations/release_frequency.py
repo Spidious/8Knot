@@ -158,6 +158,8 @@ def release_frequency_graph(repolist, interval):
 
     start = time.perf_counter()
     logging.warning(f"{VIZ_ID}- START")
+    
+    print("DF" ,df)
 
     # test if there is data
     if df.empty:
@@ -165,7 +167,7 @@ def release_frequency_graph(repolist, interval):
         return nodata_graph
 
     # function for all data pre processing, COULD HAVE ADDITIONAL INPUTS AND OUTPUTS
-    #df = process_data(df, interval)
+    df = process_data(df, interval)
 
     fig = create_figure(df)
 
@@ -182,10 +184,10 @@ def process_data(df: pd.DataFrame, interval):
 
     # convert to datetime objects rather than strings
     # ADD ANY OTHER COLUMNS WITH DATETIME
-    df["created_month"] = pd.to_datetime(df["created_month"], utc=True)
+    df["created"] = pd.to_datetime(df["created"], utc=True)
 
     # order values chronologically by COLUMN_TO_SORT_BY date
-    df = df.sort_values(by="created_month", axis=0, ascending=True)
+    df = df.sort_values(by="created", axis=0, ascending=True)
     
     
 
