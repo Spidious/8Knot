@@ -173,7 +173,6 @@ def time_to_first_response_graph(repolist, interval):
 
 def process_data(df: pd.DataFrame, interval):
 
-
     # create a new dataframe containing the number of commit per author from the top 500 contributors
     df_new = (
         df.groupby(by=[df["author_email"]])["commits"]
@@ -201,22 +200,27 @@ def create_figure(df: pd.DataFrame, interval):
         y="commits",
         range_x=x_r,
         labels={"x": x_name, "y": "Commits"},
-        color_discrete_sequence=[color_seq[4]],
+        color_discrete_sequence=[color_seq[4]]
     )
-    fig.update_traces(hovertemplate=hover + "<br>Commits: %{y}<br>")
+    
+    fig.update_traces(hovertemplate=hover + "<br># of Commits: %{y}<br>")
+   
     fig.update_xaxes(
+        
         showgrid=True,
         ticklabelmode="period",
         dtick=period,
         rangeslider_yaxis_rangemode="match",
-        range=x_r,
+        range=x_r
     )
+    
     fig.update_layout(
-        xaxis_title=x_name,
+        
+        xaxis_title="Authors",
         yaxis_title="Number of Commits",
         margin_b=40,
         margin_r=40,
-        font=dict(size=10),
+        font=dict(size=7)
     )
 
     return fig
